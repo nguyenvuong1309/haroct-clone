@@ -1,0 +1,76 @@
+name: Android Build & Upload to Firebase App Distribution
+
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v3
+
+      - name: ☕ Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: "zulu"
+          java-version: "17.0.10"
+          
+      - name: 🧑‍💻 Check Java version
+        run: java --version
+
+      - name: 📂 Print Current Directory
+        run: pwd
+        
+      - name: 🔑 Decode google-services.json
+        env: 
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: echo "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
+
+
+      - name: 🔑 Decode Firebase options
+        env:
+          firebase_options_dart: ${{ secrets.FIREBASE_OPTION }}
+        run: echo "$firebase_options_dart" > lib/firebase_options.dart
+
+
+      - name: 🦄 Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          flutter-version: 3.24.1
+
+
+      - name: 📋 Check Flutter Version
+        run: flutter --version
+
+
+      - name: 📦 Get Flutter dependencies
+        run: flutter pub get
+
+
+      - name: 📱 Build APK
+        run: flutter build apk
+
+
+      - name: 📤 Upload APK artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: release-apk
+          path: build/app/outputs/apk/release/app-release.apk
+
+
+      - name: 🚀 Upload to Firebase App Distribution
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{ secrets.APPID }}
+          token: ${{ secrets.TOKEN }}
+          groups: tester
+          file: build/app/outputs/apk/release/app-release.apk

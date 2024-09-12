@@ -44,6 +44,11 @@ class FlashSaleWidget extends StatelessWidget {
         if (snapshot.data != null) {
           return Container(
             height: Get.height / 5,
+            // child: Container(
+            //     width: Get.width,
+            //     child: Column(children: [
+            //       Container(
+            //         height: Get.height / 5,
             child: ListView.builder(
               itemCount: snapshot.data!.docs.length,
               shrinkWrap: true,
@@ -120,6 +125,9 @@ class FlashSaleWidget extends StatelessWidget {
                 );
               },
             ),
+         
+            //   )
+            // ])),
           );
         }
 
